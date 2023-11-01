@@ -1,24 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+
+import { BaseForm } from "react-invenio-forms";
+import { PermissionsField } from "./PermissionsField";
+import { Container } from "semantic-ui-react";
+import { useFormikContext } from "formik";
+
+const FormikStateLogger = () => {
+  const state = useFormikContext();
+  return <pre>{JSON.stringify(state, null, 2)}</pre>;
+};
+
+const permissions = {
+  owner: ["can_create", "can_read", "can_update", "can_delete"],
+  manager: ["can_create", "can_read", "can_update", "can_delete"],
+  curator: ["can_create", "can_read", "can_update"],
+  reader: ["can_read"],
+};
+
+const initialValues = {
+  permissions: {
+    owner: ["can_create", "can_read", "can_update", "can_delete"],
+    manager: ["can_create", "can_read", "can_update", "can_delete"],
+  },
+};
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BaseForm
+      formik={{
+        initialValues: initialValues,
+        // validationSchema: NRDocumentValidationSchema,
+        // validateOnChange: false,
+        // validateOnBlur: false,
+        // enableReinitialize: true,
+      }}
+    >
+      <Container style={{ marginTop: "200px" }}>
+        <PermissionsField
+          label="Permissions"
+          labelIcon="user"
+          fieldPath="permissions"
+          autocompleteNames="off"
+          addButtonLabel="Add permission"
+          modal={{ addLabel: "Add role", editLabel: "Edit role" }}
+        />
+        <FormikStateLogger />
+      </Container>
+    </BaseForm>
   );
 }
 
