@@ -46,7 +46,7 @@ const permissionsDisplay = (
 
   return (
     <Label.Group>
-      <Label color="blue" size="large" style={{ marginRight: "2rem" }}>
+      <Label color="green" size="large" style={{ marginRight: "2rem" }}>
         {roleDisplay}
       </Label>
       {permissionsDisplayArray.map((permission, index) => (

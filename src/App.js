@@ -19,6 +19,11 @@ const initialValues = {
   },
 };
 
+const MyCmp1 = () => <div>Cmp1</div>;
+const MyCmp2 = () => <div>Cmp2</div>;
+
+const fields = [<MyCmp1 key="a" />, <MyCmp2 key="b" />];
+
 function App() {
   return (
     <BaseForm
@@ -38,6 +43,7 @@ function App() {
           addButtonLabel="Add permission"
           modal={{ addLabel: "Add role", editLabel: "Edit role" }}
         />
+        {fields}
         <FormikStateLogger />
       </Container>
     </BaseForm>

@@ -18,12 +18,15 @@ export const PermissionsFieldItem = ({
   availableRoles,
 }) => {
   const { setFieldValue, values } = useFormikContext();
+
   const removePermission = (roleName) => {
     let permissions = getIn(values, fieldPath, {});
     permissions = _omit(permissions, roleName);
     setFieldValue(fieldPath, permissions);
   };
+
   const { role } = initialPermission;
+
   return (
     <List.Item key={role}>
       <List.Content floated="right">

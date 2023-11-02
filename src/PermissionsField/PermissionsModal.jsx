@@ -168,12 +168,11 @@ export const PermissionsModal = ({
                   fieldPath={permissionsFieldPath}
                   availablePermissions={availablePermissions}
                 />
-                {/* <FormikStateLogger /> */}
+                <FormikStateLogger />
               </Form>
             </Modal.Content>
             <Modal.Actions>
               <Button
-                size="mini"
                 name="cancel"
                 onClick={() => {
                   resetForm();
@@ -186,7 +185,6 @@ export const PermissionsModal = ({
 
               {isAddingRole && (
                 <Button
-                  size="mini"
                   name="submit"
                   type="submit"
                   onClick={() => {
@@ -199,7 +197,6 @@ export const PermissionsModal = ({
                 />
               )}
               <Button
-                size="mini"
                 name="submit"
                 type="submit"
                 onClick={() => {
