@@ -1,0 +1,1 @@
+export { TestCmp } from "./TestCmp";
