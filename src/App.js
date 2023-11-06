@@ -1,13 +1,20 @@
 import "./App.css";
 import React from "react";
-import { BaseForm } from "react-invenio-forms";
+import {
+  BaseForm,
+  TextField,
+  SelectField,
+  ArrayField,
+} from "react-invenio-forms";
 import { PermissionsField } from "./PermissionsField";
-import { Container } from "semantic-ui-react";
+import { Container, Dropdown } from "semantic-ui-react";
 import { useFormikContext } from "formik";
 import { TestComponent } from "./TestComponent";
-import { TextField, FieldLabel } from "react-invenio-forms";
-import { ArrayField } from "./ArrayField";
-import { TestCmp } from "./testfolder";
+import { FieldLabel } from "react-invenio-forms";
+// import { ArrayField } from "./ArrayField";
+import * as Yup from "yup";
+import { ValidationButton, SelectInput } from "./TestInput";
+import { TestArrayField } from "./TestFieldArray";
 
 const FormikStateLogger = () => {
   const state = useFormikContext();
@@ -34,22 +41,34 @@ const initialValues = {
   },
 };
 
+const options = [
+  { value: "can_read", text: "Can read" },
+  { value: "can_create", text: "Can create" },
+  { value: "can_update", text: "Can update" },
+  { value: "can_delete", text: "Can delete" },
+];
+
 const MyCmp1 = () => <div>Cmp1</div>;
 const MyCmp2 = () => <div>Cmp2</div>;
 
 const fields = [<MyCmp1 key="a" />, <MyCmp2 key="b" />];
-
+export const TestValidationSchema = Yup.object().shape({
+  metadata: Yup.object().shape({
+    title: Yup.string()
+      .required((value) => `${value.label} is a required field`)
+      .label("Title"),
+  }),
+});
+console.log(TestValidationSchema.fields.metadata.fields.title);
 function App() {
-  const Cmp = loader("TestCmp");
-
   return (
     <BaseForm
       formik={{
         initialValues: initialValues,
-        // validationSchema: NRDocumentValidationSchema,
-        // validateOnChange: false,
-        // validateOnBlur: false,
-        // enableReinitialize: true,
+        validationSchema: TestValidationSchema,
+        validateOnChange: false,
+        validateOnBlur: false,
+        enableReinitialize: true,
       }}
     >
       <Container style={{ marginTop: "200px" }}>
@@ -60,7 +79,21 @@ function App() {
           addButtonLabel="Add permission"
           modal={{ addLabel: "Add role", editLabel: "Edit role" }}
         />
-        <Cmp />
+        <PermissionsField
+          label="Permissions"
+          labelIcon="user"
+          fieldPath="custom_fields.permissions"
+          addButtonLabel="Add permission"
+          modal={{ addLabel: "Add role", editLabel: "Edit role" }}
+        />
+        <PermissionsField
+          label="Permissions"
+          labelIcon="user"
+          fieldPath="custom_fields.permissions"
+          addButtonLabel="Add permission"
+          modal={{ addLabel: "Add role", editLabel: "Edit role" }}
+        />
+
         <FormikStateLogger />
       </Container>
     </BaseForm>

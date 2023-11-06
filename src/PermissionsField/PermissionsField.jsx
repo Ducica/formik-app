@@ -12,6 +12,14 @@ const uiData = {
     { value: "can_read", text: "Can read" },
     { value: "can_update", text: "Can update" },
     { value: "can_delete", text: "Can delete" },
+    { value: "can_create", text: "Can create" },
+    { value: "can_read", text: "Can read" },
+    { value: "can_update", text: "Can update" },
+    { value: "can_delete", text: "Can delete" },
+    { value: "can_create", text: "Can create" },
+    { value: "can_read", text: "Can read" },
+    { value: "can_update", text: "Can update" },
+    { value: "can_delete", text: "Can delete" },
   ],
   roles: [
     { value: "owner", text: "Owner" },
@@ -57,7 +65,12 @@ export const PermissionsField = ({ label, labelIcon, fieldPath }) => {
   };
   return (
     <React.Fragment>
-      <FieldLabel htmlFor={fieldPath} icon={labelIcon} label={label} />
+      <FieldLabel
+        htmlFor={fieldPath}
+        icon={labelIcon}
+        label={label}
+        style={{ fontWeight: "bold" }}
+      />
       <PermissionsTable
         columnNames={uiData.permissions}
         rowNames={uiData.roles}
