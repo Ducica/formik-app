@@ -1,81 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { getIn, useFormikContext } from "formik";
-import { FieldLabel } from "react-invenio-forms";
 import { PermissionsTable } from "./PermissionsTable";
+import { Icon, Button } from "semantic-ui-react";
+import { i18next } from "./i18next";
 
-// TODO: how will we get all the available permissions and their display values (text)
+export const PermissionsField = ({ uiData, label, labelIcon, fieldPath }) => {
+  const { values } = useFormikContext();
+  const initialPermissionsState = getIn(values, fieldPath, {});
 
-const uiData = {
-  permissions: [
-    { value: "can_create", text: "Can create" },
-    { value: "can_read", text: "Can read" },
-    { value: "can_update", text: "Can update" },
-    { value: "can_delete", text: "Can delete" },
-    { value: "can_create", text: "Can create" },
-    { value: "can_read", text: "Can read" },
-    { value: "can_update", text: "Can update" },
-    { value: "can_delete", text: "Can delete" },
-    { value: "can_create", text: "Can create" },
-    { value: "can_read", text: "Can read" },
-    { value: "can_update", text: "Can update" },
-    { value: "can_delete", text: "Can delete" },
-  ],
-  roles: [
-    { value: "owner", text: "Owner" },
-    { value: "manager", text: "Manager" },
-    { value: "curator", text: "Curator" },
-    { value: "reader", text: "Reader" },
-  ],
-};
-
-export const PermissionsField = ({ label, labelIcon, fieldPath }) => {
-  const { values, setFieldValue } = useFormikContext();
-  // const initialPermissionsState = getIn(values, fieldPath, {});
-  const [permissionsState, setPermissionsState] = useState({
-    owner: ["can_create", "can_read", "can_update", "can_delete"],
-    manager: ["can_create", "can_read", "can_update"],
-    curator: [],
-    reader: [],
-  });
-  useEffect(() => {
-    setFieldValue(fieldPath, permissionsState);
-  }, [permissionsState, fieldPath, setFieldValue]);
-
-  const handleCheckboxClick = (roleValue, permissionValue) => {
-    const permissionsArray = permissionsState[roleValue];
-    if (permissionsArray?.includes(permissionValue)) {
-      let newPermissionsArray = [...permissionsArray];
-      console.log(newPermissionsArray);
-      newPermissionsArray = newPermissionsArray.filter(
-        (permission) => permission !== permissionValue
-      );
-      setPermissionsState({
-        ...permissionsState,
-        [roleValue]: newPermissionsArray,
-      });
-    } else {
-      let newPermissionsArray = [...permissionsArray];
-      newPermissionsArray.push(permissionValue);
-      setPermissionsState({
-        ...permissionsState,
-        [roleValue]: newPermissionsArray,
-      });
-    }
-  };
   return (
     <React.Fragment>
-      <FieldLabel
-        htmlFor={fieldPath}
-        icon={labelIcon}
-        label={label}
-        style={{ fontWeight: "bold" }}
-      />
+      <Icon name="user" />
+      <label style={{ fontWeight: "bold" }}>{label}</label>
+      <Button icon="angle double down" aria-label={i18next.t("Expand table")} />
       <PermissionsTable
-        columnNames={uiData.permissions}
-        rowNames={uiData.roles}
-        handleCheckboxClick={handleCheckboxClick}
-        permissionsState={permissionsState}
+        permissions={uiData.permissions}
+        roles={uiData.roles}
+        initialPermissionsState={initialPermissionsState}
+        fieldPath={fieldPath}
       />
     </React.Fragment>
   );
@@ -85,4 +28,5 @@ PermissionsField.propTypes = {
   fieldPath: PropTypes.string.isRequired,
   label: PropTypes.string,
   labelIcon: PropTypes.string,
+  uiData: PropTypes.object.isRequired,
 };

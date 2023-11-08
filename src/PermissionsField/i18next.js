@@ -6,7 +6,7 @@ import { initReactI18next } from "react-i18next";
 const options = {
   fallbackLng: "en", // fallback keys
   returnEmptyString: false,
-  debug: process.env.NODE_ENV === "development",
+  debug: false,
   keySeparator: false,
   nsSeparator: false,
   // specify language detection order

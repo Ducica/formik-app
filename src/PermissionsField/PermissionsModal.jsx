@@ -1,73 +1,33 @@
-import React from "react";
-import { Button, Form, Grid, Header, Modal } from "semantic-ui-react";
-import { Formik, useFormikContext, getIn } from "formik";
-import { FieldLabel, SelectField } from "react-invenio-forms";
-import * as Yup from "yup";
-import { CheckboxGroupField } from "./CheckboxGroupField";
+import React, { useState } from "react";
+import {
+  Button,
+  Grid,
+  Header,
+  Modal,
+  Dropdown,
+  Checkbox,
+} from "semantic-ui-react";
+import { useFormikContext } from "formik";
+import { FieldLabel } from "react-invenio-forms";
 import { i18next } from "./i18next";
 import PropTypes from "prop-types";
 
-const requiredMessage = i18next.t("This field is required");
-
-const arrayMinLengthMessage = i18next.t(
-  "A role must have at least one permission"
-);
-
-function translatePermissions(inputArray) {
-  const result = {};
-
-  inputArray.forEach((inputObj) => {
-    const { role, permissions } = inputObj;
-    result[role] = permissions;
-  });
-
-  return result;
-}
-
-const FormikStateLogger = () => {
-  const state = useFormikContext();
-  return <pre>{JSON.stringify(state, null, 2)}</pre>;
-};
-
-const ModalActions = {
-  ADD: "add",
-  EDIT: "edit",
-};
-
 export const PermissionsModal = ({
-  addLabel,
-  editLabel,
-  availablePermissions,
-  availableRoles,
+  permissions,
+  roles,
   trigger,
-  modalAction,
-  permissionsList,
-  index,
+  permissionsState,
+  initialRole,
   fieldPath,
+  handleCheckboxClick,
 }) => {
-  // setFieldValue from main formik form
   const { setFieldValue } = useFormikContext();
   const [open, setOpen] = React.useState(false);
-  const [action, setAction] = React.useState(modalAction);
   const [saveAndContinueLabel, setSaveAndContinueLabel] = React.useState(
     "Save and add another"
   );
-  // adding prefix to internal value fieldPath, because it does not work well when formik value is an array directly
-  // this is transparent for the user of component (state on top level)
-  const initialValues =
-    modalAction === ModalActions.ADD
-      ? { prefix: [...permissionsList, { role: "", permissions: [] }] }
-      : { prefix: permissionsList };
-
-  const permissionsSchema = Yup.object().shape({
-    prefix: Yup.array().of(
-      Yup.object().shape({
-        role: Yup.string().required(requiredMessage),
-        permissions: Yup.array().min(1, arrayMinLengthMessage),
-      })
-    ),
-  });
-
+  const [role, setRole] = useState(initialRole);
+  const currentPermissionsForSelectedRole = permissionsState[role];
   const openModal = () => {
     setOpen(true);
   };
@@ -83,146 +43,119 @@ export const PermissionsModal = ({
     }, 2000);
   };
 
-  const onSubmit = (values, formikBag) => {
-    const serializedValues = translatePermissions(getIn(values, "prefix", []));
-    setFieldValue(fieldPath, { ...serializedValues });
-    formikBag.setSubmitting(false);
-    formikBag.resetForm();
-    switch (action) {
-      case "saveAndContinue":
-        closeModal();
-        openModal();
-        changeContent();
-        break;
-      case "saveAndClose":
-        closeModal();
-        break;
-      default:
-        break;
-    }
-  };
-
   return (
-    <Formik
-      initialValues={initialValues}
-      onSubmit={onSubmit}
-      enableReinitialize
-      validationSchema={permissionsSchema}
-      validateOnChange={false}
-      validateOnBlur={false}
-    >
-      {({ values, resetForm, handleSubmit, errors, setFieldTouched }) => {
-        const isAddingRole = modalAction === ModalActions.ADD;
-
-        const rolesFieldPath = isAddingRole
-          ? `prefix.${permissionsList.length}.role`
-          : `prefix.${index}.role`;
-
-        const permissionsFieldPath = isAddingRole
-          ? `prefix.${permissionsList.length}.permissions`
-          : `prefix.${index}.permissions`;
-
-        const value = getIn(values, rolesFieldPath, "");
-
-        const usedRoles = getIn(values, "prefix", [])
-          .map((item) => item.role)
-          .filter((role) => role);
-
-        return (
-          <Modal
-            size="tiny"
-            centered={false}
-            onOpen={() => openModal()}
-            open={open}
-            trigger={trigger}
-            onClose={() => {
-              closeModal();
-              resetForm();
-            }}
-            closeIcon
-            closeOnDimmerClick={false}
-          >
-            <Modal.Header as="h6" className="pt-10 pb-10">
-              <Grid>
-                <Grid.Column floated="left">
-                  <Header as="h2">{isAddingRole ? addLabel : editLabel}</Header>
-                </Grid.Column>
-              </Grid>
-            </Modal.Header>
-            <Modal.Content>
-              <Form>
-                <SelectField
-                  clearable
-                  onBlur={() => setFieldTouched(rolesFieldPath)}
-                  deburr
-                  fieldPath={rolesFieldPath}
-                  required
-                  label={
-                    <FieldLabel htmlFor={"role"} icon="pencil" label="Role" />
-                  }
-                  options={availableRoles.filter(
-                    (o) => !usedRoles.includes(o.value) || o.value === value
-                  )}
-                />
-                <CheckboxGroupField
-                  fieldPath={permissionsFieldPath}
-                  availablePermissions={availablePermissions}
-                />
-                <FormikStateLogger />
-              </Form>
-            </Modal.Content>
-            <Modal.Actions>
-              <Button
-                name="cancel"
-                onClick={() => {
-                  resetForm();
-                  closeModal();
-                }}
-                icon="remove"
-                content={i18next.t("Cancel")}
-                floated="left"
-              />
-
-              {isAddingRole && (
-                <Button
-                  name="submit"
-                  type="submit"
-                  onClick={() => {
-                    setAction("saveAndContinue");
-                    handleSubmit();
-                  }}
-                  primary
-                  icon="checkmark"
-                  content={saveAndContinueLabel}
-                />
-              )}
-              <Button
-                name="submit"
-                type="submit"
-                onClick={() => {
-                  setAction("saveAndClose");
-                  handleSubmit();
-                }}
-                primary
-                icon="checkmark"
-                content={i18next.t("Save")}
-              />
-            </Modal.Actions>
-          </Modal>
-        );
+    <Modal
+      centered={false}
+      onOpen={() => openModal()}
+      open={open}
+      trigger={trigger}
+      onClose={() => {
+        closeModal();
+        setRole(initialRole);
       }}
-    </Formik>
+      closeIcon
+      closeOnDimmerClick={false}
+    >
+      <Modal.Header as="h6" className="pt-10 pb-10">
+        <Grid>
+          <Grid.Row>
+            <Grid.Column textAlign="right" width={3}>
+              <Header as="h2">Edit role:</Header>
+            </Grid.Column>
+            <Grid.Column floated="left" width={3}>
+              <Dropdown
+                name={role}
+                value={role}
+                deburr
+                required
+                label={
+                  <FieldLabel htmlFor={"role"} icon="pencil" label="Role" />
+                }
+                options={roles}
+                onChange={(e, data) => setRole(data.value)}
+              />
+            </Grid.Column>
+          </Grid.Row>
+        </Grid>
+      </Modal.Header>
+      <Modal.Content>
+        <Grid padded columns={permissions.length}>
+          {permissions?.map(({ group, text, permissions }) => (
+            <Grid.Column key={group}>
+              <Grid container>
+                <Grid.Row style={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+                  {text}
+                </Grid.Row>
+                {permissions?.map(({ value, text }) => (
+                  <Grid.Row textAlign="justified" key={value}>
+                    <Checkbox
+                      label={text}
+                      checked={currentPermissionsForSelectedRole.includes(
+                        value
+                      )}
+                      onChange={() => handleCheckboxClick(role, value)}
+                    />
+                  </Grid.Row>
+                ))}
+                {/* <Grid.Row>
+                  <Checkbox
+                    label="Select group"
+                    checked={currentPermissionsForSelectedRole.includes(value)}
+                    onChange={() => handleCheckboxClick(role, value)}
+                  />
+                </Grid.Row> */}
+              </Grid>
+            </Grid.Column>
+          ))}
+        </Grid>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button
+          name="cancel"
+          onClick={() => {
+            closeModal();
+            setRole(initialRole);
+          }}
+          icon="remove"
+          content={i18next.t("Cancel")}
+          floated="left"
+        />
+
+        <Button
+          name="submit"
+          type="submit"
+          onClick={() => {
+            setFieldValue(fieldPath, permissionsState);
+            changeContent();
+          }}
+          primary
+          icon="checkmark"
+          content={saveAndContinueLabel}
+        />
+
+        <Button
+          name="submit"
+          type="submit"
+          onClick={() => {
+            setFieldValue(fieldPath, permissionsState);
+            closeModal();
+            setRole(initialRole);
+          }}
+          primary
+          icon="checkmark"
+          content={i18next.t("Save")}
+        />
+      </Modal.Actions>
+    </Modal>
   );
 };
 
 PermissionsModal.propTypes = {
-  modalAction: PropTypes.oneOf(["add", "edit"]).isRequired,
-  addLabel: PropTypes.string.isRequired,
-  editLabel: PropTypes.string.isRequired,
-  trigger: PropTypes.object.isRequired,
-  roleOptions: PropTypes.array,
-  availablePermissions: PropTypes.array.isRequired,
-  availableRoles: PropTypes.array.isRequired,
-  permissionsList: PropTypes.array.isRequired,
-  index: PropTypes.number,
+  permissions: PropTypes.array.isRequired,
+  roles: PropTypes.array.isRequired,
+  trigger: PropTypes.node.isRequired,
+  permissionsState: PropTypes.object.isRequired,
+  initialRole: PropTypes.string.isRequired,
+  fieldPath: PropTypes.string.isRequired,
+  handleCheckboxClick: PropTypes.func.isRequired,
 };

@@ -1,70 +1,105 @@
-import React from "react";
-import { Table, Checkbox } from "semantic-ui-react";
+import React, { useState } from "react";
+import { Table, Icon, Button } from "semantic-ui-react";
 import PropTypes from "prop-types";
+import { PermissionsModal } from "./PermissionsModal";
 
 export const PermissionsTable = ({
-  columnNames,
-  rowNames,
-  handleCheckboxClick,
-  permissionsState,
+  roles,
+  permissions,
+  initialPermissionsState,
+  fieldPath,
 }) => {
+  const [permissionsState, setPermissionsState] = useState(
+    initialPermissionsState
+  );
+
+  const [tableShown, setTableShown] = useState(false);
+
+  const handleCheckboxClick = (roleValue, permissionValue) => {
+    const permissionsArray = permissionsState[roleValue];
+    if (permissionsArray?.includes(permissionValue)) {
+      let newPermissionsArray = [...permissionsArray];
+      newPermissionsArray = newPermissionsArray.filter(
+        (permission) => permission !== permissionValue
+      );
+      setPermissionsState({
+        ...permissionsState,
+        [roleValue]: newPermissionsArray,
+      });
+    } else {
+      let newPermissionsArray = [...permissionsArray];
+      newPermissionsArray.push(permissionValue);
+      setPermissionsState({
+        ...permissionsState,
+        [roleValue]: newPermissionsArray,
+      });
+    }
+  };
+
   return (
     <Table
-      definition
       textAlign="center"
       verticalAlign="middle"
       celled
-      size="small"
+      padded
+      columns={roles?.length + 1}
+      unstackable
       compact
       collapsing
     >
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell />
-          {columnNames?.map(({ value, text }) => (
-            <Table.HeaderCell key={value}>{text}</Table.HeaderCell>
+          {tableShown && <Table.HeaderCell />}
+
+          {roles?.map(({ value, text }) => (
+            <Table.HeaderCell key={value}>
+              {text}
+              <PermissionsModal
+                roles={roles}
+                permissions={permissions}
+                initialRole={value}
+                trigger={
+                  <Button
+                    icon="pencil"
+                    style={{ backgroundColor: "transparent" }}
+                  />
+                }
+                permissionsState={permissionsState}
+                fieldPath={fieldPath}
+                handleCheckboxClick={handleCheckboxClick}
+              />
+            </Table.HeaderCell>
           ))}
         </Table.Row>
       </Table.Header>
 
-      <Table.Body>
-        {rowNames?.map(({ value: roleValue, text: roleText }) => (
-          <Table.Row key={roleValue}>
-            <Table.Cell>{roleText}</Table.Cell>
-            {columnNames?.map(
-              ({ value: permissionValue, text: permissionText }) => (
-                <Table.Cell key={permissionValue}>
-                  <Checkbox
-                    checked={permissionsState[roleValue]?.includes(
-                      permissionValue
-                    )}
-                    onChange={() =>
-                      handleCheckboxClick(roleValue, permissionValue)
-                    }
-                  />
-                </Table.Cell>
+      {tableShown && (
+        <Table.Body>
+          {permissions?.map(({ permissions }) => {
+            return permissions.map(
+              ({ value: permission, text: permissionName }) => (
+                <Table.Row key={permission}>
+                  <Table.Cell>{permissionName}</Table.Cell>
+                  {roles?.map(({ value, text }) => (
+                    <Table.Cell key={value}>
+                      {permissionsState[value].includes(permission) && (
+                        <Icon name="check" />
+                      )}
+                    </Table.Cell>
+                  ))}
+                </Table.Row>
               )
-            )}
-          </Table.Row>
-        ))}
-      </Table.Body>
+            );
+          })}
+        </Table.Body>
+      )}
     </Table>
   );
 };
 
 PermissionsTable.propTypes = {
-  columnNames: PropTypes.arrayOf(
-    PropTypes.shape({
-      text: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  rowNames: PropTypes.arrayOf(
-    PropTypes.shape({
-      text: PropTypes.string.isRequired,
-      value: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  handleCheckboxClick: PropTypes.func.isRequired,
-  permissionsState: PropTypes.object.isRequired,
+  roles: PropTypes.array.isRequired,
+  permissions: PropTypes.array.isRequired,
+  initialPermissionsState: PropTypes.object.isRequired,
+  fieldPath: PropTypes.string.isRequired,
 };
