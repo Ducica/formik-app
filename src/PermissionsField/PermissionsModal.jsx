@@ -8,7 +8,6 @@ import {
   Checkbox,
 } from "semantic-ui-react";
 import { useFormikContext } from "formik";
-import { FieldLabel } from "react-invenio-forms";
 import { i18next } from "./i18next";
 import PropTypes from "prop-types";
 
@@ -20,27 +19,26 @@ export const PermissionsModal = ({
   initialRole,
   fieldPath,
   handleCheckboxClick,
+  handleResetPermissionState,
 }) => {
   const { setFieldValue } = useFormikContext();
   const [open, setOpen] = React.useState(false);
-  const [saveAndContinueLabel, setSaveAndContinueLabel] = React.useState(
-    "Save and add another"
-  );
+  const [saveAndContinueLabel, setSaveAndContinueLabel] =
+    React.useState("Save and continue");
   const [role, setRole] = useState(initialRole);
   const currentPermissionsForSelectedRole = permissionsState[role];
   const openModal = () => {
     setOpen(true);
   };
-
   const closeModal = () => {
+    setRole(initialRole);
     setOpen(false);
   };
-
   const changeContent = () => {
     setSaveAndContinueLabel("Added");
     setTimeout(() => {
-      setSaveAndContinueLabel("Save and add another");
-    }, 2000);
+      setSaveAndContinueLabel("Save and continue");
+    }, 1000);
   };
 
   return (
@@ -51,30 +49,28 @@ export const PermissionsModal = ({
       trigger={trigger}
       onClose={() => {
         closeModal();
-        setRole(initialRole);
+        handleResetPermissionState();
       }}
       closeIcon
       closeOnDimmerClick={false}
     >
-      <Modal.Header as="h6" className="pt-10 pb-10">
+      <Modal.Header>
         <Grid>
-          <Grid.Row>
-            <Grid.Column textAlign="right" width={3}>
-              <Header as="h2">Edit role:</Header>
-            </Grid.Column>
-            <Grid.Column floated="left" width={3}>
-              <Dropdown
-                name={role}
-                value={role}
-                deburr
-                required
-                label={
-                  <FieldLabel htmlFor={"role"} icon="pencil" label="Role" />
-                }
-                options={roles}
-                onChange={(e, data) => setRole(data.value)}
-              />
-            </Grid.Column>
+          <Grid.Row style={{ paddingBottom: 0 }}>
+            <Header
+              style={{ paddingLeft: "2rem", marginRight: "0.3rem" }}
+              as="h2"
+            >
+              {i18next.t("Editing role: ")}
+            </Header>
+            <Dropdown
+              name={role}
+              value={role}
+              deburr
+              required
+              options={roles}
+              onChange={(e, data) => setRole(data.value)}
+            />
           </Grid.Row>
         </Grid>
       </Modal.Header>
@@ -97,13 +93,6 @@ export const PermissionsModal = ({
                     />
                   </Grid.Row>
                 ))}
-                {/* <Grid.Row>
-                  <Checkbox
-                    label="Select group"
-                    checked={currentPermissionsForSelectedRole.includes(value)}
-                    onChange={() => handleCheckboxClick(role, value)}
-                  />
-                </Grid.Row> */}
               </Grid>
             </Grid.Column>
           ))}
@@ -114,7 +103,7 @@ export const PermissionsModal = ({
           name="cancel"
           onClick={() => {
             closeModal();
-            setRole(initialRole);
+            handleResetPermissionState();
           }}
           icon="remove"
           content={i18next.t("Cancel")}
@@ -139,7 +128,6 @@ export const PermissionsModal = ({
           onClick={() => {
             setFieldValue(fieldPath, permissionsState);
             closeModal();
-            setRole(initialRole);
           }}
           primary
           icon="checkmark"
@@ -158,4 +146,5 @@ PermissionsModal.propTypes = {
   initialRole: PropTypes.string.isRequired,
   fieldPath: PropTypes.string.isRequired,
   handleCheckboxClick: PropTypes.func.isRequired,
+  handleResetPermissionState: PropTypes.func.isRequired,
 };

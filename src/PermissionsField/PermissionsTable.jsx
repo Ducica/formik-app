@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Table, Icon, Button } from "semantic-ui-react";
+import { Table, Icon, Button, Dropdown } from "semantic-ui-react";
 import PropTypes from "prop-types";
 import { PermissionsModal } from "./PermissionsModal";
+import { i18next } from "./i18next";
 
 export const PermissionsTable = ({
   roles,
@@ -13,7 +14,23 @@ export const PermissionsTable = ({
     initialPermissionsState
   );
 
-  const [tableShown, setTableShown] = useState(false);
+  // when someone closes modal or clicks on cancel
+  const handleResetPermissionState = () => {
+    setPermissionsState(initialPermissionsState);
+  };
+
+  const [permissionsGroup, setPermissionsGroup] = useState(
+    permissions[0].group
+  );
+
+  const permissionsGroupOptions = permissions.map((item) => ({
+    text: item.text,
+    value: item.group,
+  }));
+
+  const currentGroup = permissions.find(
+    (obj) => obj.group === permissionsGroup
+  );
 
   const handleCheckboxClick = (roleValue, permissionValue) => {
     const permissionsArray = permissionsState[roleValue];
@@ -38,18 +55,15 @@ export const PermissionsTable = ({
 
   return (
     <Table
+      definition
       textAlign="center"
       verticalAlign="middle"
-      celled
-      padded
-      columns={roles?.length + 1}
       unstackable
-      compact
-      collapsing
+      celled
     >
       <Table.Header>
         <Table.Row>
-          {tableShown && <Table.HeaderCell />}
+          <Table.HeaderCell width={3} />
 
           {roles?.map(({ value, text }) => (
             <Table.HeaderCell key={value}>
@@ -60,39 +74,52 @@ export const PermissionsTable = ({
                 initialRole={value}
                 trigger={
                   <Button
-                    icon="pencil"
+                    icon="pencil green"
                     style={{ backgroundColor: "transparent" }}
                   />
                 }
                 permissionsState={permissionsState}
                 fieldPath={fieldPath}
                 handleCheckboxClick={handleCheckboxClick}
+                handleResetPermissionState={handleResetPermissionState}
               />
             </Table.HeaderCell>
           ))}
         </Table.Row>
       </Table.Header>
 
-      {tableShown && (
-        <Table.Body>
-          {permissions?.map(({ permissions }) => {
-            return permissions.map(
-              ({ value: permission, text: permissionName }) => (
-                <Table.Row key={permission}>
-                  <Table.Cell>{permissionName}</Table.Cell>
-                  {roles?.map(({ value, text }) => (
-                    <Table.Cell key={value}>
-                      {permissionsState[value].includes(permission) && (
-                        <Icon name="check" />
-                      )}
-                    </Table.Cell>
-                  ))}
-                </Table.Row>
-              )
-            );
-          })}
-        </Table.Body>
-      )}
+      <Table.Body>
+        {currentGroup?.permissions.map(
+          ({ value: permission, text: permissionName }) => (
+            <Table.Row key={permission}>
+              <Table.Cell>{permissionName}</Table.Cell>
+              {roles?.map(({ value, text }) => (
+                <Table.Cell key={value}>
+                  {initialPermissionsState[value].includes(permission) && (
+                    <Icon name="check" />
+                  )}
+                </Table.Cell>
+              ))}
+            </Table.Row>
+          )
+        )}
+      </Table.Body>
+      <Table.Footer fullWidth>
+        <Table.Row>
+          <Table.HeaderCell
+            textAlign="right"
+            colSpan={roles.length + 1}
+            style={{ fontWeight: "bold" }}
+          >
+            {i18next.t("You are viewing permissions for: ")}
+            <Dropdown
+              options={permissionsGroupOptions}
+              value={permissionsGroup}
+              onChange={(e, data) => setPermissionsGroup(data.value)}
+            />
+          </Table.HeaderCell>
+        </Table.Row>
+      </Table.Footer>
     </Table>
   );
 };
