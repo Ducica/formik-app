@@ -76,6 +76,7 @@ export const PermissionsTable = ({
                   <Button
                     icon="pencil green"
                     style={{ backgroundColor: "transparent" }}
+                    type="button"
                   />
                 }
                 permissionsState={permissionsState}
@@ -95,7 +96,7 @@ export const PermissionsTable = ({
               <Table.Cell>{permissionName}</Table.Cell>
               {roles?.map(({ value, text }) => (
                 <Table.Cell key={value}>
-                  {initialPermissionsState[value].includes(permission) && (
+                  {initialPermissionsState[value]?.includes(permission) && (
                     <Icon name="check" />
                   )}
                 </Table.Cell>

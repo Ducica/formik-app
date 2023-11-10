@@ -86,7 +86,7 @@ export const PermissionsModal = ({
                   <Grid.Row textAlign="justified" key={value}>
                     <Checkbox
                       label={text}
-                      checked={currentPermissionsForSelectedRole.includes(
+                      checked={currentPermissionsForSelectedRole?.includes(
                         value
                       )}
                       onChange={() => handleCheckboxClick(role, value)}
@@ -108,11 +108,11 @@ export const PermissionsModal = ({
           icon="remove"
           content={i18next.t("Cancel")}
           floated="left"
+          type="button"
         />
 
         <Button
-          name="submit"
-          type="submit"
+          type="button"
           onClick={() => {
             setFieldValue(fieldPath, permissionsState);
             changeContent();
@@ -123,8 +123,7 @@ export const PermissionsModal = ({
         />
 
         <Button
-          name="submit"
-          type="submit"
+          type="button"
           onClick={() => {
             setFieldValue(fieldPath, permissionsState);
             closeModal();
