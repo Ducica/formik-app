@@ -1,5 +1,5 @@
 import "./App.css";
-import React from "react";
+import React, { useState } from "react";
 import { BaseForm } from "react-invenio-forms";
 import { PermissionsField } from "./PermissionsField";
 import { Container, Dropdown, Grid } from "semantic-ui-react";
@@ -8,6 +8,8 @@ import { FieldLabel } from "react-invenio-forms";
 // import { ArrayField } from "./ArrayField";
 import * as Yup from "yup";
 import { LocalVocabularySelectField } from "./LocalVocabularySelectField";
+import { DatepickerField } from "./Datepicker";
+import DatePicker from "react-datepicker";
 
 const FormikStateLogger = () => {
   const state = useFormikContext();
@@ -24,6 +26,10 @@ const loader = async (widget) => {
 };
 
 const initialValues = {
+  metadata: {
+    // datePublished: "2019",
+    dateRange: "2019-5-12/2019-5-19",
+  },
   custom_fields: {
     permissions: {
       owner: [
@@ -121,6 +127,23 @@ const uiData = {
   ],
 };
 
+const BasicDateRange = () => {
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [startDate, endDate] = dateRange;
+  console.log(dateRange);
+  return (
+    <DatePicker
+      selectsRange={true}
+      startDate={startDate}
+      endDate={endDate}
+      onChange={(update) => {
+        setDateRange(update);
+      }}
+      isClearable={true}
+    />
+  );
+};
+
 function App() {
   return (
     <BaseForm
@@ -135,12 +158,21 @@ function App() {
       <Container style={{ marginTop: "200px" }}>
         <Grid>
           <Grid.Column floated="left" width={9}>
-            <PermissionsField
+            {/* <PermissionsField
               label="Permissions"
               labelIcon="user"
               fieldPath="custom_fields.permissions"
               uiData={uiData}
+            /> */}
+            {/* <DatepickerField
+              selectsRange={false}
+              fieldPath="metadata.datePublished"
+            /> */}
+            <DatepickerField
+              selectsRange={true}
+              fieldPath="metadata.dateRange"
             />
+            <BasicDateRange />
           </Grid.Column>
           <Grid.Column width={7}></Grid.Column>
         </Grid>

@@ -12,6 +12,7 @@
     "i18next-browser-languagedetector": "^7.1.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
+    "react-datepicker": "^4.21.0",
     "react-dom": "^18.2.0",
     "react-i18next": "^13.3.1",
     "react-invenio-forms": "^2.8.2",
