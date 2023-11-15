@@ -8,8 +8,9 @@ import { FieldLabel } from "react-invenio-forms";
 // import { ArrayField } from "./ArrayField";
 import * as Yup from "yup";
 import { LocalVocabularySelectField } from "./LocalVocabularySelectField";
-import { DatepickerField } from "./Datepicker";
+import { DaterangePicker, SingleDatePicker } from "./Datepicker";
 import DatePicker from "react-datepicker";
+import ChartComponent from "./histogram/histogram";
 
 const FormikStateLogger = () => {
   const state = useFormikContext();
@@ -23,47 +24,6 @@ const loader = async (widget) => {
   let component = module.default ?? module[widget];
   console.log(component);
   return React.createElement(component);
-};
-
-const initialValues = {
-  metadata: {
-    // datePublished: "2019",
-    dateRange: "2019-5-12/2019-5-19",
-  },
-  custom_fields: {
-    permissions: {
-      owner: [
-        "can_search",
-        "can_read",
-        "can_update",
-        "can_delete",
-        "can_create_files",
-        "can_set_content_files",
-        "can_get_content_files",
-        "can_commit_files",
-      ],
-      manager: [
-        "can_search",
-        "can_read",
-        "can_create",
-        "can_read_files",
-        "can_update_files",
-      ],
-      curator: [
-        "can_create",
-        "can_draft_set_content_files",
-        "can_search_drafts",
-        "can_draft_commit_files",
-      ],
-      reader: [
-        "can_get_content_files",
-        "can_read_files",
-        "can_search_drafts",
-        "can_search",
-        "can_read_draft",
-      ],
-    },
-  },
 };
 
 const uiData = {
@@ -130,7 +90,6 @@ const uiData = {
 const BasicDateRange = () => {
   const [dateRange, setDateRange] = useState([null, null]);
   const [startDate, endDate] = dateRange;
-  console.log(dateRange);
   return (
     <DatePicker
       selectsRange={true}
@@ -142,6 +101,49 @@ const BasicDateRange = () => {
       isClearable={true}
     />
   );
+};
+
+const initialValues = {
+  metadata: {
+    dateRange: "",
+    dateRangeEdit: "2019-05/2019-05",
+    singleDate: "",
+    singleDateEdit: "2019-05",
+  },
+  custom_fields: {
+    permissions: {
+      owner: [
+        "can_search",
+        "can_read",
+        "can_update",
+        "can_delete",
+        "can_create_files",
+        "can_set_content_files",
+        "can_get_content_files",
+        "can_commit_files",
+      ],
+      manager: [
+        "can_search",
+        "can_read",
+        "can_create",
+        "can_read_files",
+        "can_update_files",
+      ],
+      curator: [
+        "can_create",
+        "can_draft_set_content_files",
+        "can_search_drafts",
+        "can_draft_commit_files",
+      ],
+      reader: [
+        "can_get_content_files",
+        "can_read_files",
+        "can_search_drafts",
+        "can_search",
+        "can_read_draft",
+      ],
+    },
+  },
 };
 
 function App() {
@@ -168,11 +170,13 @@ function App() {
               selectsRange={false}
               fieldPath="metadata.datePublished"
             /> */}
-            <DatepickerField
-              selectsRange={true}
-              fieldPath="metadata.dateRange"
-            />
-            <BasicDateRange />
+            {/* <DaterangePicker fieldPath="metadata.dateRange" />
+            <DaterangePicker fieldPath="metadata.dateRangeEdit" />
+            <DaterangePicker fieldPath="metadata.dateRangeNull" />
+            <SingleDatePicker fieldPath="metadata.singleDate" />
+            <SingleDatePicker fieldPath="metadata.singleDateEdit" />
+            <SingleDatePicker fieldPath="metadata.singleDateNull" /> */}
+            <ChartComponent />
           </Grid.Column>
           <Grid.Column width={7}></Grid.Column>
         </Grid>

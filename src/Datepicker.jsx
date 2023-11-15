@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Dropdown } from "semantic-ui-react";
 import { useField, useFormikContext } from "formik";
+import { DatePickerHeader } from "./DatePickerHeader";
+import PropTypes from "prop-types";
+import { FieldLabel } from "react-invenio-forms";
 
 const edtfDateFormatOptions = [
   { value: "yyyy", text: "YYYY" },
@@ -10,17 +12,40 @@ const edtfDateFormatOptions = [
   { value: "yyyy-MM-dd", text: "YYYY-MM-DD" },
 ];
 
+const useInitialDateFormat = (fieldValue) => {
+  let dateFormat;
+  if (fieldValue) {
+    const value = fieldValue.includes("/")
+      ? fieldValue.split("/")[0]
+      : fieldValue;
+    if (value.length === 4) {
+      dateFormat = "yyyy";
+    } else if (value.length === 7) {
+      dateFormat = "yyyy-MM";
+    } else {
+      dateFormat = "yyyy-MM-dd";
+    }
+  } else {
+    dateFormat = "yyyy-MM-dd";
+  }
+
+  const [initialDateFormat, setInitialDateFormat] = useState(dateFormat);
+  return [initialDateFormat, setInitialDateFormat];
+};
+
 const allEmptyStrings = (arr) => arr.every((element) => element === "");
 
 const serializeDate = (dateObj, dateFormat) => {
   if (dateObj === null) return "";
+  const pad = (value) => (value < 10 ? `0${value}` : value);
+
   if (dateFormat === "yyyy") return `${dateObj.getFullYear()}`;
   if (dateFormat === "yyyy-MM")
-    return `${dateObj.getFullYear()}-${dateObj.getMonth() + 1}`;
+    return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}`;
   if (dateFormat === "yyyy-MM-dd")
-    return `${dateObj.getFullYear()}-${
-      dateObj.getMonth() + 1
-    }-${dateObj.getDate()}`;
+    return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(
+      dateObj.getDate()
+    )}`;
 };
 
 const deserializeDate = (edtfDateString) => {
@@ -31,418 +56,103 @@ const deserializeDate = (edtfDateString) => {
   }
 };
 
-const DatepickerCustomHeader = ({
-  dateFormat,
-  monthDate,
-  decreaseMonth,
-  increaseMonth,
-  increaseYear,
-  decreaseYear,
-  date,
-  setDateFormat,
-  edtfDateFormatOptions,
+export const DaterangePicker = ({
+  fieldPath,
+  label,
+  htmlFor,
+  icon,
+  ...datePickerProps
 }) => {
+  const { setFieldValue } = useFormikContext();
+  const [field] = useField(fieldPath);
+  const [dateFormat, setDateFormat] = useInitialDateFormat(field?.value);
+  let dates;
+
+  if (field?.value) {
+    dates = field.value.split("/").map((date) => deserializeDate(date));
+  } else {
+    dates = [null, null];
+  }
+
+  const onChange = (dates) => {
+    const serializedDates = dates.map((date) =>
+      serializeDate(date, dateFormat)
+    );
+    if (allEmptyStrings(serializedDates)) {
+      setFieldValue(fieldPath, "");
+    } else {
+      setFieldValue(fieldPath, serializedDates.join("/"));
+    }
+  };
   return (
-    <div>
-      {(dateFormat === "yyyy-MM" || dateFormat === "yyyy-MM-dd") && (
-        <div>
-          <button
-            aria-label="Previous Month"
-            className={
-              "react-datepicker__navigation react-datepicker__navigation--previous"
-            }
-            onClick={decreaseMonth}
-          >
-            <span
-              className={
-                "react-datepicker__navigation-icon react-datepicker__navigation-icon--previous"
-              }
-            >
-              {"<"}
-            </span>
-          </button>
-          <span className="react-datepicker__current-month">
-            {monthDate.toLocaleString("cs-CZ", {
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          <button
-            aria-label="Next Month"
-            className={
-              "react-datepicker__navigation react-datepicker__navigation--next"
-            }
-            onClick={increaseMonth}
-          >
-            <span
-              className={
-                "react-datepicker__navigation-icon react-datepicker__navigation-icon--next"
-              }
-            >
-              {">"}
-            </span>
-          </button>
-        </div>
-      )}
-      {dateFormat === "yyyy" && (
-        <div>
-          <button
-            aria-label="Previous Month"
-            className={
-              "react-datepicker__navigation react-datepicker__navigation--previous"
-            }
-            onClick={increaseYear}
-          >
-            <span
-              className={
-                "react-datepicker__navigation-icon react-datepicker__navigation-icon--previous"
-              }
-            >
-              {"<"}
-            </span>
-          </button>
-          <span className="react-datepicker__current-month">
-            {date.getFullYear()}
-          </span>
-          <button
-            aria-label="Next Month"
-            className={
-              "react-datepicker__navigation react-datepicker__navigation--next"
-            }
-            onClick={decreaseYear}
-          >
-            <span
-              className={
-                "react-datepicker__navigation-icon react-datepicker__navigation-icon--next"
-              }
-            >
-              {">"}
-            </span>
-          </button>
-        </div>
-      )}
-      <div>
-        {/*TODO: semantic UI dropdown items weird styling - maybe make regular dropdown component from scratch */}
-        <Dropdown
-          options={edtfDateFormatOptions}
-          onChange={(e, data) => setDateFormat(data.value)}
-          value={dateFormat}
+    <>
+      <FieldLabel htmlFor={fieldPath} icon={icon} label={"Label"} />
+
+      <DatePicker
+        {...field}
+        isClearable
+        startDate={dates[0] ?? null}
+        endDate={dates[1] ?? null}
+        onChange={onChange}
+        showYearPicker={dateFormat === "yyyy"}
+        showMonthYearPicker={dateFormat === "yyyy-MM"}
+        dateFormat={dateFormat}
+        selectsRange={true}
+        autoComplete="off"
+        renderCustomHeader={(props) => (
+          <DatePickerHeader
+            dateFormat={dateFormat}
+            setDateFormat={setDateFormat}
+            edtfDateFormatOptions={edtfDateFormatOptions}
+            {...props}
+          />
+        )}
+        {...datePickerProps}
+      />
+    </>
+  );
+};
+
+DaterangePicker.propTypes = {
+  fieldPath: PropTypes.string.isRequired,
+};
+
+export const SingleDatePicker = ({ fieldPath, ...datePickerProps }) => {
+  const { setFieldValue } = useFormikContext();
+  const [field] = useField(fieldPath);
+  const [dateFormat, setDateFormat] = useInitialDateFormat(field?.value);
+
+  const onChange = (dates) => {
+    setFieldValue(fieldPath, serializeDate(dates, dateFormat));
+  };
+
+  return (
+    <DatePicker
+      {...field}
+      selected={
+        deserializeDate(field?.value) ? deserializeDate(field?.value) : null
+      }
+      isClearable
+      onChange={onChange}
+      showYearPicker={dateFormat === "yyyy"}
+      showMonthYearPicker={dateFormat === "yyyy-MM"}
+      dateFormat={dateFormat}
+      selectsRange={false}
+      autoComplete="off"
+      renderCustomHeader={(props) => (
+        <DatePickerHeader
+          dateFormat={dateFormat}
+          setDateFormat={setDateFormat}
+          edtfDateFormatOptions={edtfDateFormatOptions}
+          {...props}
         />
-      </div>
-    </div>
-  );
-};
-
-export const DaterangePicker = ({ selectsRange, fieldPath }) => {
-  const { setFieldValue } = useFormikContext();
-  const [field] = useField(fieldPath);
-  console.log(field.value);
-  const [dateFormat, setDateFormat] = useState("yyyy-MM-dd");
-  let dates;
-
-  if (selectsRange) {
-    if (field?.value) {
-      dates = field.value.split("/").map((date) => deserializeDate(date));
-    } else {
-      dates = [null, null];
-    }
-  }
-  console.log(dates);
-
-  const onChange = (dates) => {
-    console.log(dates);
-    if (selectsRange) {
-      const serializedDates = dates.map((date) =>
-        serializeDate(date, dateFormat)
-      );
-      console.log(serializedDates);
-      const [start, end] = serializedDates;
-      console.log(start, end);
-      if (allEmptyStrings(serializedDates)) {
-        console.log("ran");
-        setFieldValue(fieldPath, "");
-      } else {
-        setFieldValue(fieldPath, serializedDates.join("/"));
-      }
-    } else {
-      console.log(dates);
-      console.log(serializeDate(dates, dateFormat));
-      setFieldValue(fieldPath, serializeDate(dates, dateFormat));
-    }
-  };
-  return (
-    <DatePicker
-      {...field}
-      // selected={
-      //   !selectsRange && deserializeDate(field?.value)
-      //     ? deserializeDate(field?.value)
-      //     : null
-      // }
-      isClearable
-      startDate={selectsRange ? dates[0] : null}
-      endDate={selectsRange ? dates[1] : null}
-      onChange={onChange}
-      showYearPicker={dateFormat === "yyyy"}
-      showMonthYearPicker={dateFormat === "yyyy-MM"}
-      dateFormat={dateFormat}
-      selectsRange={selectsRange}
-      autoComplete="off"
-      renderCustomHeader={({
-        monthDate,
-        decreaseMonth,
-        increaseMonth,
-        increaseYear,
-        decreaseYear,
-        date,
-      }) => {
-        return (
-          <div>
-            {(dateFormat === "yyyy-MM" || dateFormat === "yyyy-MM-dd") && (
-              <div>
-                <button
-                  aria-label="Previous Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--previous"
-                  }
-                  onClick={decreaseMonth}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--previous"
-                    }
-                  >
-                    {"<"}
-                  </span>
-                </button>
-                <span className="react-datepicker__current-month">
-                  {monthDate.toLocaleString("cs-CZ", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-                <button
-                  aria-label="Next Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--next"
-                  }
-                  onClick={increaseMonth}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--next"
-                    }
-                  >
-                    {">"}
-                  </span>
-                </button>
-              </div>
-            )}
-            {dateFormat === "yyyy" && (
-              <div>
-                <button
-                  aria-label="Previous Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--previous"
-                  }
-                  onClick={increaseYear}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--previous"
-                    }
-                  >
-                    {"<"}
-                  </span>
-                </button>
-                <span className="react-datepicker__current-month">
-                  {date.getFullYear()}
-                  {date.get}
-                </span>
-                <button
-                  aria-label="Next Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--next"
-                  }
-                  onClick={decreaseYear}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--next"
-                    }
-                  >
-                    {">"}
-                  </span>
-                </button>
-              </div>
-            )}
-            <div>
-              {/*TODO: semantic UI dropdown items weird styling - maybe make regular dropdown component from scratch */}
-              <Dropdown
-                options={edtfDateFormatOptions}
-                onChange={(e, data) => setDateFormat(data.value)}
-                value={dateFormat}
-              />
-            </div>
-          </div>
-        );
-      }}
+      )}
+      label="dwadwa"
+      {...datePickerProps}
     />
   );
 };
 
-export const SingleDatePicker = ({ selectsRange, fieldPath }) => {
-  const { setFieldValue } = useFormikContext();
-  const [field] = useField(fieldPath);
-  console.log(field.value);
-  const [dateFormat, setDateFormat] = useState("yyyy-MM-dd");
-  let dates;
-
-  if (selectsRange) {
-    if (field?.value) {
-      dates = field.value.split("/").map((date) => deserializeDate(date));
-    } else {
-      dates = [null, null];
-    }
-  }
-  console.log(dates);
-
-  const onChange = (dates) => {
-    console.log(dates);
-    if (selectsRange) {
-      const serializedDates = dates.map((date) =>
-        serializeDate(date, dateFormat)
-      );
-      console.log(serializedDates);
-      const [start, end] = serializedDates;
-      console.log(start, end);
-      if (allEmptyStrings(serializedDates)) {
-        console.log("ran");
-        setFieldValue(fieldPath, "");
-      } else {
-        setFieldValue(fieldPath, serializedDates.join("/"));
-      }
-    } else {
-      console.log(dates);
-      console.log(serializeDate(dates, dateFormat));
-      setFieldValue(fieldPath, serializeDate(dates, dateFormat));
-    }
-  };
-  return (
-    <DatePicker
-      {...field}
-      // selected={
-      //   !selectsRange && deserializeDate(field?.value)
-      //     ? deserializeDate(field?.value)
-      //     : null
-      // }
-      isClearable
-      startDate={selectsRange ? dates[0] : null}
-      endDate={selectsRange ? dates[1] : null}
-      onChange={onChange}
-      showYearPicker={dateFormat === "yyyy"}
-      showMonthYearPicker={dateFormat === "yyyy-MM"}
-      dateFormat={dateFormat}
-      selectsRange={selectsRange}
-      autoComplete="off"
-      renderCustomHeader={({
-        monthDate,
-        decreaseMonth,
-        increaseMonth,
-        increaseYear,
-        decreaseYear,
-        date,
-      }) => {
-        return (
-          <div>
-            {(dateFormat === "yyyy-MM" || dateFormat === "yyyy-MM-dd") && (
-              <div>
-                <button
-                  aria-label="Previous Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--previous"
-                  }
-                  onClick={decreaseMonth}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--previous"
-                    }
-                  >
-                    {"<"}
-                  </span>
-                </button>
-                <span className="react-datepicker__current-month">
-                  {monthDate.toLocaleString("cs-CZ", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-                <button
-                  aria-label="Next Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--next"
-                  }
-                  onClick={increaseMonth}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--next"
-                    }
-                  >
-                    {">"}
-                  </span>
-                </button>
-              </div>
-            )}
-            {dateFormat === "yyyy" && (
-              <div>
-                <button
-                  aria-label="Previous Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--previous"
-                  }
-                  onClick={increaseYear}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--previous"
-                    }
-                  >
-                    {"<"}
-                  </span>
-                </button>
-                <span className="react-datepicker__current-month">
-                  {date.getFullYear()}
-                  {date.get}
-                </span>
-                <button
-                  aria-label="Next Month"
-                  className={
-                    "react-datepicker__navigation react-datepicker__navigation--next"
-                  }
-                  onClick={decreaseYear}
-                >
-                  <span
-                    className={
-                      "react-datepicker__navigation-icon react-datepicker__navigation-icon--next"
-                    }
-                  >
-                    {">"}
-                  </span>
-                </button>
-              </div>
-            )}
-            <div>
-              {/*TODO: semantic UI dropdown items weird styling - maybe make regular dropdown component from scratch */}
-              <Dropdown
-                options={edtfDateFormatOptions}
-                onChange={(e, data) => setDateFormat(data.value)}
-                value={dateFormat}
-              />
-            </div>
-          </div>
-        );
-      }}
-    />
-  );
+SingleDatePicker.propTypes = {
+  fieldPath: PropTypes.string.isRequired,
 };
