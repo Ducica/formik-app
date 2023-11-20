@@ -1,13 +1,13 @@
 .horizontal-slider {
   width: 100%;
-  height: 25px;
+  height: 5px;
+  margin-top: 2rem;
 }
 .thumb {
-  height: 25px;
-  padding-left: 5px;
-  padding-right: 5px;
+  top: -5px;
+  height: 15px;
   line-height: 25px;
-  width: fit-content;
+  width: 15px;
   text-align: center;
   background-color: #000;
   color: #fff;
@@ -25,4 +25,34 @@
 .track.track-0,
 .track.track-2 {
   background-color: rgb(221, 221, 221);
+}
+
+.thumb-value {
+  color: black;
+  position: absolute;
+  width: fit-content;
+  padding: 4px;
+  top: 15px;
+  left: 0;
+  right: 0;
+  border: 1px solid black;
+}
+
+.histogram-rectangle:hover {
+  fill: red;
+  cursor: pointer;
+}
+
+.slider-values {
+  width: 100%;
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-handle-value {
+  border: 2px solid black;
+  padding: 8px 32px;
+  border-radius: 8px;
+  font-weight: bold;
 }

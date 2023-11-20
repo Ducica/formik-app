@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { ChartComponentA } from "./histogram";
-import { Form } from "semantic-ui-react";
+import { Histogram } from "./histogram";
 import { arrayData } from "./data";
-import ReactSlider from "react-slider";
+import { DoubleSlider } from "./DoubleSlider";
 import "./slider.css";
+
+const renderThumb = (props, state) => {
+  console.log(state);
+  return (
+    <div {...props}>
+      <div></div>
+    </div>
+  );
+};
 
 export const HistogramComponent = ({ histogramData }) => {
   const [sliderValue, setSliderValue] = useState([
@@ -12,39 +20,42 @@ export const HistogramComponent = ({ histogramData }) => {
   ]);
   const [data, setData] = useState(histogramData);
 
-  //   const modifiedHistData = histogramData.filter(
-  //     (d) => d.year >= sliderValue[0] && d.year <= sliderValue[1]
-  //   );
-  const handleSliderRelease = (value) => {
+  const handleAfterChange = (value) => {
     const newData = histogramData.filter(
       (d) => d.year >= value[0] && d.year <= value[1]
     );
     setData(newData);
   };
-  let modifiedHistData = histogramData;
-  console.log(sliderValue);
+
+  const handleChange = (value) => {
+    setSliderValue(value);
+  };
+
+  const handleRectangleClick = (value) => {
+    setSliderValue([value.year, value.year]);
+    setData([value]);
+  };
+
   return (
     <React.Fragment>
-      <ChartComponentA histogramData={data} />
-      <div style={{ marginTop: "100px" }}>
-        <ReactSlider
-          value={sliderValue}
-          className={`horizontal-slider`}
-          thumbClassName="thumb"
-          trackClassName="track"
-          onChange={(value, index) => {
-            console.log(index);
-            setSliderValue(value);
-          }}
-          onAfterChange={handleSliderRelease}
-          // defaultValue={[0, 100]}
-          ariaLabel={["Lower thumb", "Upper thumb"]}
-          ariaValuetext={(state) => `Thumb value ${state.valueNow}`}
-          renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
-          min={arrayData[0].year}
-          max={arrayData[arrayData.length - 1].year}
-        />
-      </div>
+      <Histogram
+        histogramData={data}
+        svgHeight={250}
+        rectangleClassName={"histogram-rectangle"}
+        handleRectangleClick={handleRectangleClick}
+      />
+      <DoubleSlider
+        sliderValue={sliderValue}
+        className="horizontal-slider"
+        thumbClassName="thumb"
+        trackClassName="track"
+        handleChange={handleChange}
+        handleAfterChange={handleAfterChange}
+        ariaLabel={["Lower thumb", "Upper thumb"]}
+        ariaValuetext={(state) => `Thumb value ${state.valueNow}`}
+        min={arrayData[0].year}
+        max={arrayData[arrayData.length - 1].year}
+      />
     </React.Fragment>
   );
 };

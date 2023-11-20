@@ -1,19 +1,13 @@
 import React, { useMemo } from "react";
+import PropTypes from "prop-types";
 
-export const Xaxis = ({
-  xScale,
-  height,
-  marginBottom,
-  width,
-  marginLeft,
-  histogramData,
-}) => {
+export const Xaxis = ({ xScale, height, marginBottom, width }) => {
   const ticks = useMemo(() => {
     return xScale.ticks(width / 80).map((value) => ({
       value,
       xOffset: xScale(value),
     }));
-  }, [histogramData]);
+  }, [width, xScale]);
 
   return (
     <svg>
@@ -41,4 +35,11 @@ export const Xaxis = ({
       ))}
     </svg>
   );
+};
+
+Xaxis.propTypes = {
+  xScale: PropTypes.func.isRequired,
+  height: PropTypes.number.isRequired,
+  marginBottom: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired,
 };
